@@ -1,0 +1,19 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env
+
+# Backup outputs
+backups/
+*.backup
+
+# IDE
+.vscode/
+.idea/
+
+# Secrets
+*.ini
+*.env

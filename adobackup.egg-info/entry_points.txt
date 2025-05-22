@@ -1,0 +1,3 @@
+[console_scripts]
+adobackup = src.cli:main
+
