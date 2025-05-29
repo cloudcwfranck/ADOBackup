@@ -1,28 +1,21 @@
-from azure.devops.connection import Connection
-from msrest.authentication import BasicAuthentication
 import subprocess
 from pathlib import Path
+from azure.devops.v6_0.git import GitClient
+import json
 
 class ReposModule:
-    def __init__(self, org, pat):
-        self.org = org
-        self.pat = pat
-        
-    def backup(self):
-        print("📦 Backing up repositories...")
-        connection = Connection(
-            base_url=f"https://dev.azure.com/{self.org}",
-            creds=BasicAuthentication('', self.pat))
-        
-        git_client = connection.clients.get_git_client()
-        repos = git_client.get_repositories()
-        
-        backup_dir = Path("backups/repos")
-        backup_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, connection):
+        self.client = connection.clients.get_git_client()
+    
+    def backup(self, backup_path):
+        repos_backup = backup_path / "repos"
+        repos_backup.mkdir(exist_ok=True)
         
         results = []
+        repos = self.client.get_repositories()
+        
         for repo in repos:
-            repo_dir = backup_dir / f"{repo.name}.git"
+            repo_dir = repos_backup / f"{repo.name}.git"
             try:
                 subprocess.run([
                     "git", "clone", "--mirror",
@@ -32,7 +25,7 @@ class ReposModule:
                 results.append({
                     "name": repo.name,
                     "status": "success",
-                    "path": str(repo_dir)
+                    "path": str(repo_dir.relative_to(backup_path))
                 })
             except subprocess.CalledProcessError as e:
                 results.append({
@@ -40,5 +33,8 @@ class ReposModule:
                     "status": "failed",
                     "error": e.stderr.decode()
                 })
+        
+        with open(repos_backup / "metadata.json", "w") as f:
+            json.dump(results, f, indent=2)
         
         return results

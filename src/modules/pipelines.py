@@ -1,17 +1,36 @@
-from azure.devops.connection import Connection
-from msrest.authentication import BasicAuthentication
+from azure.devops.v6_0.pipelines import PipelinesClient
+import json
 
 class PipelinesModule:
-    def __init__(self, org, pat):
-        self.client = Connection(
-            base_url=f"https://dev.azure.com/{org}",
-            creds=BasicAuthentication('', pat)
-            ).clients.get_pipelines_client()
+    def __init__(self, connection):
+        self.client = connection.clients.get_pipelines_client()
     
-    def backup(self):
+    def backup(self, backup_path):
+        pipelines_path = backup_path / "pipelines"
+        pipelines_path.mkdir(exist_ok=True)
+        
         pipelines = self.client.list_pipelines()
-        return [{
-            "id": p.id,
-            "name": p.name,
-            "yaml": self.client.get_pipeline(p.id).configuration
-        } for p in pipelines]
+        results = []
+        
+        for pipeline in pipelines:
+            try:
+                config = self.client.get_pipeline(pipeline.id)
+                with open(pipelines_path / f"{pipeline.id}.json", "w") as f:
+                    json.dump(config.__dict__, f)
+                results.append({
+                    "id": pipeline.id,
+                    "name": pipeline.name,
+                    "status": "success"
+                })
+            except Exception as e:
+                results.append({
+                    "id": pipeline.id,
+                    "name": pipeline.name,
+                    "status": "failed",
+                    "error": str(e)
+                })
+        
+        with open(pipelines_path / "summary.json", "w") as f:
+            json.dump(results, f, indent=2)
+        
+        return results

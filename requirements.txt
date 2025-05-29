@@ -1,0 +1,4 @@
+azure-devops==7.1.0b4
+azure-core==1.33.0
+python-dotenv>=1.0.0
+questionary>=2.1.0
