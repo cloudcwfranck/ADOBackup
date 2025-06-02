@@ -1,4 +1,4 @@
-from azure.devops.v6_0.pipelines import PipelinesClient
+from azure.devops.v7_1.pipelines import PipelinesClient
 import json
 
 class PipelinesModule:

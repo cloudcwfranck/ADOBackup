@@ -1,4 +1,4 @@
-from azure.devops.v6_0.test import TestClient
+from azure.devops.v7_1.test import TestClient
 import json
 
 class TestPlansModule:

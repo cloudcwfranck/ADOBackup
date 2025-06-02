@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from azure.devops.v6_0.git import GitClient
+from azure.devops.v7_1.git import GitClient
 import json
 
 class ReposModule:
